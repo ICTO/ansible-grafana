@@ -1,2 +1,33 @@
 ---
 # tasks file for ansible-grafana
+- get_url: url=http://grafanarel.s3.amazonaws.com/grafana-{{ grafana.version }}.tar.gz
+            dest={{ grafana.home }}/grafana-{{ grafana.version }}.tar.gz
+  tags:
+    - grafana
+
+# When force_reinstall is set make sure that the target dir is absent
+- file: path={{ grafana.home }}/{{ grafana.install_dir }}/grafana-{{ grafana.version }} state=absent
+  when: grafana.force_reinstall is defined && grafana.force_reinstall is True
+  tags:
+    - grafana
+
+- file: path={{ grafana.home }}/{{ grafana.install_dir }} state=directory
+  tags:
+    - grafana
+
+# Unpack the download archive to install directory
+- unarchive: src={{ grafana.home }}/grafana-{{ grafana.version }}.tar.gz dest={{ grafana.home }}/{{ grafana.install_dir }}
+              copy=false creates={{ grafana.home }}/{{ grafana.install_dir }}/grafana-{{ grafana.version }}/config.js
+  tags:
+    - grafana
+
+# Place grafana config file in the directory
+- template: src=grafana.conf.j2 dest={{ grafana.home}}/{{ grafana.install_dir }}/grafana-{{ grafana.version }}/config.js
+  tags:
+    - grafana
+
+# Symlink to webroot
+- file: src={{ grafana.home }}/{{ grafana.install_dir }}/grafana-{{ grafana.version }}
+        dest={{ grafana.webroot }} state=link force=yes
+  tags:
+    - grafana
