@@ -7,7 +7,7 @@
 
 # When force_reinstall is set make sure that the target dir is absent
 - file: path={{ grafana.home }}/{{ grafana.install_dir }}/grafana-{{ grafana.version }} state=absent
-  when: grafana.force_reinstall is defined && grafana.force_reinstall is True
+  when: grafana.force_reinstall
   tags:
     - grafana
 
